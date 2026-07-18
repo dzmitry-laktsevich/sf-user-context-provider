@@ -1,58 +1,45 @@
-# Salesforce DX Project
+# User Context Provider
 
-Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
+This Salesforce Apex package demonstrates how to run a callable Apex action under a specified user context. It combines an ActionWrapper payload, a UserContextProvider entry point, an ExampleService implementation, and Flow metadata to orchestrate execution in a controlled and reusable way.
 
-This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
+## What It Does
 
-## Prerequisites
+The package allows you to wrap an Apex action with metadata such as the target class, method name, and serialized parameters, then execute that action as a chosen user. This is useful when business logic should run with the permissions and context of a specific user rather than the current transaction context.
 
-Before you start, make sure you have:
+## Key Components
 
-- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
-- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
-- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
-- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
+- ActionWrapper: carries the target Apex class, method name, serialized parameters, and the username to execute under.
+- UserContextProvider: invokes the action and coordinates the orchestration flow.
+- ExampleService: a sample implementation of System.Callable for demonstration purposes.
+- Flow metadata: UserContextOrchestrator and UserContextOrchestrator_CallAction provide the orchestration path for running the requested action under the target user context.
 
-## Project Structure
+## Example Apex Usage
 
-Your DX project follows this structure:
+```apex
+ActionWrapper action = new ActionWrapper(
+    'ExampleService',
+    'getContextUser',
+    null
+);
 
-- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
-- **`config/`** - Scratch org definitions and project settings
-- **`scripts/`** - Automation scripts for common tasks
-- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
+User targetUser = [
+    SELECT Id, Username
+    FROM User
+    WHERE Username = :UserInfo.getUserName()
+    LIMIT 1
+];
 
-See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
+String executedAs = UserContextProvider.runActionAs(action, targetUser);
+System.debug(executedAs);
+```
 
-## Get Started
+## Deployment and Usage Notes
 
-Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
+1. Deploy the Apex classes and Flow metadata to a Salesforce org.
+2. Ensure the target user exists and has access to the underlying Apex logic.
+3. Use ActionWrapper to define the callable class and method to execute.
+4. Review the Flow metadata if you want to adapt the orchestration behavior for your own implementation.
 
-## Common Salesforce CLI Commands
+## Test Information
 
-Here are common CLI commands that you'll use the most:
-
-- `sf org login web`: Authorize an org
-- `sf org open`: Open your org in a browser
-- `sf org create scratch`: Create a scratch org
-- `sf project deploy start`: Deploy metadata to your org
-- `sf project retrieve start`: Retrieve metadata from your org
-- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
-- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
-- `sf data <command>`: Work with test data
-- `sf alias <command>`: Manage org aliases
-- `sf config <command>`: Configure CLI settings
-
-## Use Agentforce Vibes to Build Lightning Apps
-
-Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
-
-## Additional Resources
-
-- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
-- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
-- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
-- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-
+The package includes Apex tests for validation and execution paths in UserContextProviderTest and ActionWrapperTest. Run those test classes in a sandbox or scratch org to verify the core behavior.
