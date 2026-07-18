@@ -57,4 +57,71 @@ private class UserContextProviderTest {
 
         Assert.areEqual(resultUsername, testUser.Username, 'The returned username should match the context user\'s username');
     }
+
+    @IsTest
+    static void callActionAsUser_nullAction() {
+        List<ActionWrapper> actions = null;
+
+        Test.startTest();
+        try {
+            UserContextProvider.callActionAsUser(actions);
+            Assert.fail('Expected UserContextProviderException was not thrown');
+        } catch (Exception e) {
+            Assert.isInstanceOfType(e, UserContextProvider.UserContextProviderException.class, 'Expected UserContextProviderException to be thrown');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void callActionAsUser_emptyAction() {
+        List<ActionWrapper> actions = new List<ActionWrapper>();
+
+        Test.startTest();
+        try {
+            UserContextProvider.callActionAsUser(actions);
+            Assert.fail('Expected UserContextProviderException was not thrown');
+        } catch (Exception e) {
+            Assert.isInstanceOfType(e, UserContextProvider.UserContextProviderException.class, 'Expected UserContextProviderException to be thrown');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void callActionAsUser_invalidAction() {
+        List<ActionWrapper> actions = new List<ActionWrapper>{
+            new ActionWrapper(
+                'ExampleService',
+                null,
+                null
+            )
+        };
+
+        Test.startTest();
+        try {
+            UserContextProvider.callActionAsUser(actions);
+            Assert.fail('Expected ActionWrapperException was not thrown');
+        } catch (Exception e) {
+            Assert.isInstanceOfType(e, ActionWrapper.ActionWrapperException.class, 'Expected ActionWrapperException to be thrown');
+        }
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void callActionAsUser_validAction() {
+        List<ActionWrapper> actions = new List<ActionWrapper>{
+            new ActionWrapper(
+                'ExampleService',
+                'getContextUser',
+                null
+            )
+        };
+
+        Test.startTest();
+        try {
+            UserContextProvider.callActionAsUser(actions);
+        } catch (Exception e) {
+            Assert.fail('Expected no exception to be thrown for a valid action: ' + e.getMessage());
+        }
+        Test.stopTest();
+    }
 }
