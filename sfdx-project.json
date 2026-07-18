@@ -5,7 +5,7 @@
       "default": true
     }
   ],
-  "name": "user-context-provider",
+  "name": "sf-user-context-provider",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
   "sourceApiVersion": "67.0"
